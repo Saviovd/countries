@@ -9,7 +9,6 @@ export const AppRoutes = () => {
 
                 <Route path="/" element={<Dashboard/>} />
                 <Route path={`/:country`} element={<Country />} />
-
                 <Route path="*" Component={() => <Navigate to="/"/>}/>
 
             </Routes>

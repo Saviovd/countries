@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { ReactElement } from 'react'
 import { CardStyle } from './styles'
 import { Country } from '../../../../types/country'
 
@@ -10,7 +9,7 @@ interface CardProps {
 export const Card: React.FC<CardProps> = ({ country }) => {
 
     return (<>
-        <Link to={`/${country.name.common.replace(/\s+/g, '')}`}>
+        <Link to={`/${country.cca2}`}>
             <CardStyle>
                 <img className='country_flag' src={country.flags.svg} alt={`Flag of ${country.flags.alt}`} />
                 <div className='country_infos'>

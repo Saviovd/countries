@@ -5,6 +5,7 @@ import { Header } from "../../shared/components/Header/Header";
 import { DashboardStyle } from "./styles";
 import { Country } from "../../../types/country";
 import { Filters } from "../../shared/components/Filters/Index";
+import { getCountriesData } from "../../../utils/getData";
 
 export const Dashboard = () => {
     const [inputCountryName, setInputCountryName] = useState("");
@@ -51,16 +52,16 @@ export const Dashboard = () => {
     };
 
     useEffect(() => {
-        const getCountriesData = async () => {
+        const getCountries = async () => {
             if (countriesList.length === 0) {
-                const response = await fetch("https://restcountries.com/v3.1/all");
-                const data: Country[] = await response.json();
-                console.log(data);
-                setCountriesList(data);
+                const data = await getCountriesData()
+                if (data) {
+                    setCountriesList(data);
+                }
             }
         };
 
-        getCountriesData();
+        getCountries();
     }, [])
 
     return (

@@ -1,4 +1,3 @@
-// import './Header.scss'
 import { useState, useContext } from "react"
 import { BsFillMoonFill, BsMoon } from 'react-icons/bs'
 import { ThemeContext } from '../../contexts/themeContext'
