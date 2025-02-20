@@ -1,35 +1,25 @@
 import { Link } from 'react-router-dom'
 import { ReactElement } from 'react'
 import { CardStyle } from './styles'
+import { Country } from '../../../../types/country'
 
-interface ICardProps {
-    key: string
-    country_props: {
-        name: string
-        flag: string
-        population: number
-        region: string
-        capital: string
-    }
+interface CardProps {
+    country: Country;
 }
 
-export const Card = ({ country_props, key }: ICardProps | any): ReactElement => {
-
-    const { name, flag, population, region, capital} = country_props
+export const Card: React.FC<CardProps> = ({ country }) => {
 
     return (<>
-        <CardStyle>
-            <Link to={`/${name.replace(/\s+/g, '')}`}>
-                <div key={key} className='country'>
-                    <img className='country_flag' src={flag} alt={`Flag of ${name}`} />
-                    <div className='country_infos'>
-                        <h3 className='country_name'>{name}</h3>
-                        <p className="country_population">population:<span className='country_data'> {population.toLocaleString('en')}</span></p>
-                        <p className="country_region">region:<span className='country_data'> {region}</span></p>
-                        <p className="country_capital">capital:<span className='country_data'> {capital}</span></p>
-                    </div>
+        <Link to={`/${country.name.common.replace(/\s+/g, '')}`}>
+            <CardStyle>
+                <img className='country_flag' src={country.flags.svg} alt={`Flag of ${country.flags.alt}`} />
+                <div className='country_infos'>
+                    <h3 className='country_name'>{country.name.common}</h3>
+                    <p className="country_population">population:<span className='country_data'> {country.population.toLocaleString('pt')}</span></p>
+                    <p className="country_region">region:<span className='country_data'> {country.region}</span></p>
+                    <p className="country_capital">capital:<span className='country_data'>{country.capital}</span></p>
                 </div>
-            </Link>
-        </CardStyle> 
+            </CardStyle>
+        </Link>
     </>)
 }

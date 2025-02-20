@@ -1,61 +1,97 @@
-import { useState } from 'react'
-import countries from '../../data/data.json'
-import { Card } from '../../shared/components/Card/Card'
-import { RxMagnifyingGlass } from 'react-icons/rx'
-import { Header } from '../../shared/components/Header/Header'
-import { DashboardStyle } from './styles'
-
+import { ChangeEvent, useEffect, useState } from "react";
+import { Card } from "../../shared/components/Card/Card";
+import { RxMagnifyingGlass } from "react-icons/rx";
+import { Header } from "../../shared/components/Header/Header";
+import { DashboardStyle } from "./styles";
+import { Country } from "../../../types/country";
+import { Filters } from "../../shared/components/Filters/Index";
 
 export const Dashboard = () => {
+    const [inputCountryName, setInputCountryName] = useState("");
+    const [countryRegion, setCountryRegion] = useState("");
+    const [countriesList, setCountriesList] = useState<Country[]>([]);
+    const [filteredList, setFilteredList] = useState<Country[]>([]);
 
-    const [inputCountryName, setInputCountryNme] = useState('')
-    const [countryRegion, setCountryRegion] = useState('')
-    const [country] = useState(countries)
+    const filterCountries = (name: string, region: string) => {
+        let filtered = countriesList;
 
-    return (<>
-        <Header />
-        <DashboardStyle>
-            <div className="dashboard_filters">
-                <div className='search_country'><RxMagnifyingGlass className='magnifying_glass' /><input className='input_country' type="text" placeholder='Search for a country...' onChange={(e) => setInputCountryNme(e.target.value)}/></div>
-                <select className='region_choice' onChange={(e) => {
-                    setCountryRegion(e.target.value)
-                }}>
-                    <option value="Filter by Region" disabled selected hidden>Filter by Region</option>
-                    <option value="Americas" className="region_option">Americas</option>
-                    <option value="Africa" className="region_option">Africa</option>
-                    <option value="Asia" className="region_option">Asia</option>
-                    <option value="Europe" className="region_option">Europe</option>
-                    <option value="Oceania" className="region_option">Oceania</option>
-                    <option value="" className="region_option">Filter by Region</option>
-                </select>
-            </div>
-            <div className='countries_container'>
-                {country && 
-                <>{
-                    countries.map(country => {
-                        if (country.name === inputCountryName || 
-                            country.nativeName === inputCountryName || 
-                            country.name.toLowerCase() === inputCountryName || 
-                            country.name.toLocaleUpperCase() === inputCountryName ||
-                            country.nativeName.toLowerCase() === inputCountryName || 
-                            country.nativeName.toLocaleUpperCase() === inputCountryName
-                        ){
+        if (name) {
+            const searchValue = name.toLowerCase();
+            filtered = filtered.filter((country) => {
+                const commonNameMatch = country.name.common.toLowerCase().includes(searchValue);
+                const nativeNameMatch = Object.values(country.name.nativeName || {}).some((native) =>
+                    native.common.toLowerCase().includes(searchValue)
+                );
+                return commonNameMatch || nativeNameMatch;
+            }).sort((a, b) => {
+                const aStarts = a.name.common.toLowerCase().startsWith(searchValue) ? -1 : 1;
+                const bStarts = b.name.common.toLowerCase().startsWith(searchValue) ? -1 : 1;
+                return aStarts - bStarts || a.name.common.localeCompare(b.name.common);
+            });
+        }
 
-                            return <Card key={country.name} country_props={country}/>
+        if (region) {
+            const searchRegion = region.toLowerCase();
+            filtered = filtered.filter((country) => country.region.toLowerCase() === searchRegion);
+        }
 
-                        } else if (country.region === countryRegion) {
+        setFilteredList(filtered);
+    };
 
-                            return <Card key={country.name} country_props={country}/>
+    const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const newName = e.target.value;
+        setInputCountryName(newName);
+        filterCountries(newName, countryRegion);
+    };
 
-                        } else if (inputCountryName === '' && countryRegion === '') {
+    const handleRegionChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        const newRegion = e.target.value;
+        setCountryRegion(newRegion);
+        filterCountries(inputCountryName, newRegion);
+    };
 
-                            return <Card key={country.name} country_props={country}/>
+    useEffect(() => {
+        const getCountriesData = async () => {
+            if (countriesList.length === 0) {
+                const response = await fetch("https://restcountries.com/v3.1/all");
+                const data: Country[] = await response.json();
+                console.log(data);
+                setCountriesList(data);
+            }
+        };
 
-                        }
-                    })
-                }</>
-                }
-            </div>
-        </DashboardStyle>
-    </>)
-}
+        getCountriesData();
+    }, [])
+
+    return (
+        <>
+            <Header />
+            <DashboardStyle>
+                <Filters
+                    inputCountryName={inputCountryName}
+                    countryRegion={countryRegion}
+                    onNameChange={handleNameChange}
+                    onRegionChange={handleRegionChange}
+                />
+                <div className="countries_container">
+                    <div className="countries_container">
+                        {inputCountryName ? (
+                            filteredList.length > 0 ? (
+                                filteredList.map((country, i) => (
+                                    <Card key={i} country={country} />
+                                ))
+                            ) : (
+                                <div>Nenhum país encontrado</div>
+                            )
+                        ) : (
+                            countriesList.map((country, i) => (
+                                <Card key={i} country={country} />
+                            ))
+                        )}
+                    </div>
+
+                </div>
+            </DashboardStyle>
+        </>
+    );
+};
